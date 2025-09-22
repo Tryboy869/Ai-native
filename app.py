@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 """
 IA WEBAPP COMPLÈTE - PREUVE DE CONCEPT
@@ -723,10 +722,23 @@ if __name__ == '__main__':
     print("🌐 Interface: http://localhost:8000")
     print("=" * 50)
     
-    # Lancement avec uvicorn si disponible, sinon Flask dev server
-    try:
-        import uvicorn
-        uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
-    except ImportError:
-        print("⚠️  uvicorn non installé, utilisation du serveur Flask")
-        app.run(host="0.0.0.0", port=8000, debug=False)
+    # FIX: Utiliser Gunicorn avec Uvicorn worker OU Flask natif
+    import os
+    port = int(os.environ.get('PORT', 8000))
+    
+    # Production: Gunicorn + Uvicorn workers (ASGI compatible)
+    if os.environ.get('RENDER') or os.environ.get('PRODUCTION'):
+        try:
+            # Wrapper ASGI pour Flask
+            from asgiref.wsgi import WsgiToAsgi
+            asgi_app = WsgiToAsgi(app)
+            
+            import uvicorn
+            uvicorn.run(asgi_app, host="0.0.0.0", port=port, log_level="info")
+        except ImportError:
+            print("⚠️  ASGI wrapper non disponible, utilisation Flask natif")
+            app.run(host="0.0.0.0", port=port, debug=False)
+    else:
+        # Développement: Flask dev server
+        print("🔧 Mode développement - Flask dev server")
+        app.run(host="0.0.0.0", port=port, debug=True)
