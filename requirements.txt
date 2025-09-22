@@ -1,1 +1,32 @@
 
+# =====================================
+# IA WEBAPP - DÉPENDANCES OPTIMALES
+# =====================================
+# Total: ~200MB au lieu de 2GB+ frameworks traditionnels
+
+# Core Web Framework
+flask==3.0.0
+
+# Stack Perplexity - Recommandations validées
+spacy==3.7.2
+chromadb==0.4.18
+wikipedia==1.4.0
+
+# Optional: Better server (tu peux garder ou enlever)
+uvicorn==0.24.0
+
+# =====================================
+# INSTALLATION COMPLÈTE
+# =====================================
+# pip install -r requirements.txt
+# python -m spacy download en_core_web_sm
+# python -m spacy download fr_core_news_sm  # Optionnel pour français
+
+# =====================================
+# ALTERNATIVE ULTRA-LÉGÈRE (si problème)
+# =====================================
+# Si les libs Perplexity posent problème, décommenter ci-dessous
+# et commenter au-dessus pour mode 100% natif :
+
+# flask==3.0.0
+# uvicorn
