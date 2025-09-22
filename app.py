@@ -590,20 +590,26 @@ HTML_TEMPLATE = """
         sendButton.addEventListener('click', sendMessage);
         
         function addMessage(content, isUser = false, stats = null) {
+            console.log('➕ Ajout message:', { content, isUser, stats });  // Debug
+            
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
             
             let html = `<div>${content}</div>`;
-            if (stats) {
+            if (stats && !isUser) {
                 html += `<div class="stats">${stats}</div>`;
             }
             messageDiv.innerHTML = html;
             
             chatContainer.appendChild(messageDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            console.log('✅ Message ajouté au DOM');  // Debug
         }
         
         function showLoading() {
+            console.log('⏳ Affichage loading...');  // Debug
+            
             const loadingDiv = document.createElement('div');
             loadingDiv.className = 'message ai-message loading';
             loadingDiv.innerHTML = '<div class="spinner"></div><div>Traitement en cours...</div>';
@@ -613,15 +619,20 @@ HTML_TEMPLATE = """
         }
         
         function hideLoading() {
+            console.log('✅ Masquage loading...');  // Debug
+            
             const loading = document.getElementById('loading');
             if (loading) {
                 loading.remove();
+                console.log('🗑️ Loading supprimé');  // Debug
             }
         }
         
         async function sendMessage() {
             const message = messageInput.value.trim();
             if (!message) return;
+            
+            console.log('📤 Envoi message:', message);  // Debug
             
             // Add user message
             addMessage(message, true);
@@ -636,6 +647,8 @@ HTML_TEMPLATE = """
             showLoading();
             
             try {
+                console.log('🌐 Envoi requête vers /chat');  // Debug
+                
                 const response = await fetch('/chat', {
                     method: 'POST',
                     headers: {
@@ -644,19 +657,28 @@ HTML_TEMPLATE = """
                     body: JSON.stringify({ message: message })
                 });
                 
+                console.log('📡 Réponse reçue:', response.status);  // Debug
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
+                console.log('📊 Données:', data);  // Debug
+                
                 hideLoading();
                 
                 const stats = `<strong>Confiance:</strong> ${(data.confidence * 100).toFixed(1)}% | 
-                              <strong>Entités:</strong> ${data.entities.length} | 
+                              <strong>Entités:</strong> ${data.entities ? data.entities.length : 0} | 
                               <strong>Connaissance:</strong> ${data.knowledge_used ? 'Utilisée' : 'Non utilisée'} | 
-                              <strong>Stack:</strong> ${data.stack_info.architecture}`;
+                              <strong>Stack:</strong> ${data.stack_info ? data.stack_info.architecture : 'Native'}`;
                 
-                addMessage(data.response, false, stats);
+                addMessage(data.response || 'Réponse vide', false, stats);
                 
             } catch (error) {
+                console.error('❌ Erreur:', error);  // Debug
                 hideLoading();
-                addMessage('Erreur de communication avec l\'IA.', false);
+                addMessage(`Erreur: ${error.message}. Vérifiez la console pour plus de détails.`, false);
             }
             
             // Re-enable input
